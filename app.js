@@ -85,7 +85,7 @@
     $("empty").classList.add("hidden");
     $("thread-body").classList.remove("hidden");
     $("t-who").textContent = (t.user_name || t.user_email) + (t.user_name ? " (" + t.user_email + ")" : "");
-    $("t-meta").innerHTML = tag(t.status) + " " + esc(t.domain) + " · " + esc(t.subject || "");
+    $("t-meta").textContent = t.domain + " · " + (t.subject || "");
     $("brief").classList.toggle("hidden", !t.brief);
     $("brief").textContent = t.brief ? "Brief: " + t.brief : "";
     $("facts").textContent = ["Version " + (t.app_version || "?"), t.os || "", t.where_at ? "In: " + t.where_at : ""].filter(Boolean).join(" · ");
