@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opus Juris Support</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { color-scheme: light; --ink: #0f172a; --muted: #64748b; --line: #e2e8f0; --blue: #2563eb; --blue-dark: #1d4ed8; --bg: #f8fafc; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { font: 14px/1.45 "Segoe UI", system-ui, -apple-system, sans-serif; color: var(--ink); background: var(--bg); }
+  button, input, textarea { font: inherit; }
+  .hidden { display: none !important; }
+  /* sign in */
+  #signin { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  #signin form { width: 100%; max-width: 360px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 22px 20px; }
+  #signin h1 { font-size: 18px; margin: 0 0 4px; }
+  #signin p { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+  #signin label { display: block; font-size: 12px; font-weight: 600; color: #334155; margin: 10px 0 4px; }
+  #signin input { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; }
+  #signin input:focus { border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(71,85,105,0.12); }
+  #signin button { width: 100%; margin-top: 16px; padding: 10px 12px; border: none; border-radius: 8px; background: var(--blue); color: #fff; font-weight: 600; cursor: pointer; }
+  #signin button:hover { background: var(--blue-dark); }
+  #signin .err { color: #b91c1c; font-size: 12px; margin-top: 10px; min-height: 16px; }
+  /* the app */
+  #app { height: 100%; display: flex; flex-direction: column; }
+  header { background: #1e293b; color: #fff; padding: 10px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  header h1 { font-size: 15px; margin: 0; flex: 1; }
+  header .me { font-size: 12px; color: #cbd5e1; }
+  header button { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: #fff; border-radius: 6px; padding: 5px 9px; cursor: pointer; font-size: 12px; }
+  header button:hover { background: rgba(255,255,255,0.2); }
+  main { flex: 1; min-height: 0; display: flex; }
+  #inbox { width: 340px; flex-shrink: 0; border-right: 1px solid var(--line); background: #fff; overflow-y: auto; }
+  #inbox .filters { display: flex; gap: 6px; padding: 10px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: #fff; }
+  #inbox .filters button { flex: 1; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; color: #334155; cursor: pointer; font-size: 12px; }
+  #inbox .filters button.on { background: #eef4fe; border-color: #bfdbfe; color: var(--blue-dark); font-weight: 600; }
+  .row { display: block; width: 100%; text-align: left; padding: 10px 12px; border: none; border-bottom: 1px solid var(--line); background: #fff; cursor: pointer; }
+  .row:hover { background: #f1f5f9; }
+  .row.on { background: #eef4fe; }
+  .row .top { display: flex; align-items: center; gap: 8px; }
+  .row .who { font-weight: 600; font-size: 13px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .when { font-size: 11px; color: #94a3b8; flex-shrink: 0; }
+  .row .subject { font-size: 12.5px; color: #334155; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 11px; color: var(--muted); }
+  .dot { width: 8px; height: 8px; border-radius: 4px; background: var(--blue); display: inline-block; }
+  .tag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+  .tag.open { background: #e2e8f0; color: #334155; } .tag.waiting { background: #fef3c7; color: #92400e; } .tag.answered { background: #dcfce7; color: #166534; } .tag.closed { background: #f1f5f9; color: #64748b; }
+  #thread { flex: 1; min-width: 0; display: flex; flex-direction: column; background: #fff; }
+  #thread .head { padding: 10px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  #thread .head .back { display: none; }
+  #thread .head .title { flex: 1; min-width: 0; }
+  #thread .head .title b { display: block; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #thread .head .title span { font-size: 12px; color: var(--muted); }
+  #thread .head button.act { border: 1px solid #cbd5e1; background: #fff; color: #334155; border-radius: 6px; padding: 5px 9px; cursor: pointer; font-size: 12px; }
+  #thread .head button.act:hover { background: #f1f5f9; }
+  #brief { margin: 10px 14px 0; padding: 8px 10px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; font-size: 12.5px; color: #7c2d12; }
+  #facts { margin: 8px 14px 0; font-size: 11.5px; color: var(--muted); }
+  #msgs { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 14px; }
+  .day { text-align: center; font-size: 11px; color: #94a3b8; margin: 6px 0; }
+  .m { display: flex; align-items: flex-end; gap: 8px; margin-top: 8px; }
+  .m.mine { flex-direction: row-reverse; }
+  .m .av { width: 26px; height: 26px; border-radius: 13px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .m .av.user { background: #64748b; } .m .av.assistant { background: #1e293b; } .m .av.owner { background: var(--blue); }
+  .m .b { max-width: 78%; }
+  .m .name { font-size: 11px; color: var(--muted); margin: 0 0 1px 2px; }
+  .m .text { padding: 8px 12px; border-radius: 12px 12px 12px 3px; background: #f1f5f9; color: var(--ink); white-space: pre-wrap; word-break: break-word; font-size: 13px; }
+  .m.mine .text { border-radius: 12px 12px 3px 12px; background: var(--blue); color: #fff; }
+  .m .time { font-size: 10px; color: #94a3b8; margin: 2px 2px 0; }
+  .m.mine .time { text-align: right; }
+  .m .text.note { background: #fff; border: 1px dashed #cbd5e1; color: #475569; }
+  .handed { display: flex; align-items: center; gap: 8px; margin: 10px 0 2px; font-size: 11px; color: var(--muted); }
+  .handed::before, .handed::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  #compose { padding: 10px 14px 12px; border-top: 1px solid var(--line); flex-shrink: 0; }
+  #compose .box { display: flex; gap: 8px; align-items: flex-end; border: 1px solid #cbd5e1; border-radius: 10px; padding: 6px 6px 6px 10px; background: #fff; }
+  #compose .box:focus-within { border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(71,85,105,0.12); }
+  #compose textarea { flex: 1; min-width: 0; resize: none; border: none; outline: none; padding: 4px 0; min-height: 40px; max-height: 160px; background: transparent; }
+  #compose button { width: 32px; height: 32px; border: none; border-radius: 8px; background: var(--blue); color: #fff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  #compose button:disabled { background: #cbd5e1; cursor: not-allowed; }
+  #empty { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px; }
+  .status { font-size: 11px; color: #94a3b8; padding: 0 14px 8px; }
+  @media (max-width: 760px) {
+    #inbox { width: 100%; border-right: none; }
+    #app.showing-thread #inbox { display: none; }
+    #app:not(.showing-thread) #thread { display: none; }
+    #thread .head .back { display: inline-block; }
+  }
+</style>
+</head>
+<body>
+  <div id="signin">
+    <form id="signin-form">
+      <h1>Opus Juris Support</h1>
+      <p>Sign in with your support account.</p>
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button type="submit">Sign in</button>
+      <div class="err" id="signin-err"></div>
+    </form>
+  </div>
+  <div id="app" class="hidden">
+    <header>
+      <h1>Support</h1>
+      <span class="me" id="me"></span>
+      <button id="refresh" type="button">Refresh</button>
+      <button id="signout" type="button">Sign out</button>
+    </header>
+    <main>
+      <section id="inbox">
+        <div class="filters">
+          <button data-f="needs" class="on" type="button">Needs a reply</button>
+          <button data-f="open" type="button">Open</button>
+          <button data-f="all" type="button">All</button>
+        </div>
+        <div id="rows"></div>
+        <div class="status" id="inbox-status"></div>
+      </section>
+      <section id="thread">
+        <div id="empty">Pick a conversation.</div>
+        <div id="thread-body" class="hidden" style="display:flex;flex-direction:column;flex:1;min-height:0">
+          <div class="head">
+            <button class="back act" id="back" type="button">Back</button>
+            <div class="title"><b id="t-who"></b><span id="t-meta"></span></div>
+            <button class="act" id="t-close" type="button">Close</button>
+            <button class="act" id="t-reopen" type="button">Reopen</button>
+          </div>
+          <div id="brief" class="hidden"></div>
+          <div id="facts"></div>
+          <div id="msgs"></div>
+          <div id="compose">
+            <div class="box">
+              <textarea id="reply" rows="2" placeholder="Write a reply"></textarea>
+              <button id="send" type="button" aria-label="Send" disabled><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
