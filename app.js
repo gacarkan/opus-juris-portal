@@ -7,7 +7,7 @@
   const cfg = window.PORTAL_CONFIG || {};
   const sb = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
   const $ = (id) => document.getElementById(id);
-  let me = null, threads = [], current = null, filter = "needs", timer = null, sending = false;
+  let me = null, threads = [], current = null, filter = "needs", timer = null, fast = null, sending = false, seen = "";
 
   const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const dayOf = (iso) => { const d = new Date(iso), now = new Date(), y = new Date(now); y.setDate(now.getDate() - 1); if (d.toDateString() === now.toDateString()) return "Today"; if (d.toDateString() === y.toDateString()) return "Yesterday"; return d.toLocaleDateString([], { month: "short", day: "numeric" }); };
@@ -39,7 +39,17 @@
     $("app").classList.remove("hidden");
     $("me").textContent = user.email || "";
     await load();
-    timer = setInterval(load, 30000);
+    timer = setInterval(load, 15000);
+    // The open thread is re-read every few seconds, so the person's next
+    // message lands as they send it; the view is rebuilt only on a change.
+    fast = setInterval(async () => {
+      if (!current || document.hidden || sending) return;
+      const id = current.id;
+      const { data, error } = await sb.from("support_messages").select("id, at").eq("thread_id", id).order("at", { ascending: true });
+      if (error || !current || current.id !== id) return;
+      const key = (data || []).map((m) => m.id).join(",");
+      if (key !== seen) { seen = key; await openThread(id, true); }
+    }, 4000);
   }
 
   // ── inbox ──
@@ -83,6 +93,7 @@
     $("t-reopen").classList.toggle("hidden", t.status !== "closed");
     const { data: msgs, error } = await sb.from("support_messages").select("*").eq("thread_id", id).order("at", { ascending: true });
     if (error) { $("msgs").innerHTML = '<div class="status">Could not load: ' + esc(error.message) + "</div>"; return; }
+    seen = (msgs || []).map((m) => m.id).join(",");
     let html = "", lastDay = "";
     for (const m of msgs || []) {
       const d = dayOf(m.at);
