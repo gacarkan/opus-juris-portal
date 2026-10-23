@@ -109,7 +109,14 @@
     if (t.unread_for_owner > 0) { await sb.from("support_threads").update({ unread_for_owner: 0 }).eq("id", id); t.unread_for_owner = 0; renderInbox(); }
     if (!quiet) { $("reply").focus(); renderInbox(); }
   }
-  $("back").addEventListener("click", () => { $("app").classList.remove("showing-thread"); current = null; renderInbox(); });
+  function leaveThread() {
+    $("app").classList.remove("showing-thread");
+    current = null; seen = "";
+    $("thread-body").classList.add("hidden");
+    $("empty").classList.remove("hidden");
+    renderInbox();
+  }
+  $("back").addEventListener("click", leaveThread);
 
   // ── reply, close, reopen ──
   $("reply").addEventListener("input", () => { $("send").disabled = !$("reply").value.trim() || sending; const el = $("reply"); el.style.height = "auto"; el.style.height = Math.min(160, el.scrollHeight) + "px"; });
@@ -128,7 +135,10 @@
   $("t-close").addEventListener("click", async () => {
     if (!current) return;
     const { error } = await sb.from("support_threads").update({ status: "closed", updated_at: new Date().toISOString() }).eq("id", current.id);
-    if (error) alert("Could not close: " + error.message); else await load();
+    if (error) { alert("Could not close: " + error.message); return; }
+    // Closed: the thread leaves the screen and the inbox is back to its empty state.
+    leaveThread();
+    await load();
   });
   $("t-reopen").addEventListener("click", async () => {
     if (!current) return;
