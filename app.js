@@ -26,7 +26,7 @@
     e.preventDefault();
     $("signin-err").textContent = "";
     const { data, error } = await sb.auth.signInWithPassword({ email: $("email").value.trim(), password: $("password").value });
-    if (error || !data.session) { $("signin-err").textContent = "That email or password is incorrect."; return; }
+    if (error || !data.session) { const m = String((error && error.message) || ""); $("signin-err").textContent = /invalid login credentials/i.test(m) ? "That email or password is incorrect." : (m ? "Sign-in failed: " + m : "Sign-in failed. Check your connection and try again."); return; }
     enter(data.session.user);
   });
   $("signout").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
