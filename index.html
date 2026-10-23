@@ -12,6 +12,7 @@
   body { font: 14px/1.45 "Segoe UI", system-ui, -apple-system, sans-serif; color: var(--ink); background: var(--bg); }
   button, input, textarea { font: inherit; }
   .hidden { display: none !important; }
+  #closed-note { font-size: 12px; color: #64748b; text-align: center; padding: 12px 14px; border-top: 1px solid #e2e8f0; }
   /* sign in */
   #signin { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px; }
   #signin form { width: 100%; max-width: 360px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 22px 20px; }
@@ -129,6 +130,7 @@
           <div id="brief" class="hidden"></div>
           <div id="facts"></div>
           <div id="msgs"></div>
+          <div id="closed-note" class="hidden">This conversation is closed. Reopen it to reply.</div>
           <div id="compose">
             <div class="box">
               <textarea id="reply" rows="2" placeholder="Write a reply"></textarea>

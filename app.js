@@ -91,6 +91,8 @@
     $("facts").textContent = ["Version " + (t.app_version || "?"), t.os || "", t.where_at ? "In: " + t.where_at : ""].filter(Boolean).join(" · ");
     $("t-close").classList.toggle("hidden", t.status === "closed");
     $("t-reopen").classList.toggle("hidden", t.status !== "closed");
+    $("compose").classList.toggle("hidden", t.status === "closed");
+    $("closed-note").classList.toggle("hidden", t.status !== "closed");
     const { data: msgs, error } = await sb.from("support_messages").select("*").eq("thread_id", id).order("at", { ascending: true });
     if (error) { $("msgs").innerHTML = '<div class="status">Could not load: ' + esc(error.message) + "</div>"; return; }
     seen = (msgs || []).map((m) => m.id).join(",");
@@ -126,6 +128,7 @@
     const text = $("reply").value.trim();
     if (!text || !current || sending) return;
     sending = true; $("send").disabled = true;
+    if (current.status === "closed") { alert("This conversation is closed. Reopen it to reply."); $("send").disabled = false; return; }
     const { error } = await sb.rpc("support_owner_reply", { p_thread_id: current.id, p_text: text });
     sending = false;
     if (error) { alert("The reply was not sent: " + error.message); $("send").disabled = false; return; }
