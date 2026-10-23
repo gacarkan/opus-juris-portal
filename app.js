@@ -92,6 +92,8 @@
     $("t-close").classList.toggle("hidden", t.status === "closed");
     $("t-reopen").classList.toggle("hidden", t.status !== "closed");
     $("compose").classList.toggle("hidden", t.status === "closed");
+    $("reply").disabled = t.status === "closed";
+    if (t.status === "closed") { $("reply").value = ""; $("reply").blur(); $("send").disabled = true; }
     $("closed-note").classList.toggle("hidden", t.status !== "closed");
     const { data: msgs, error } = await sb.from("support_messages").select("*").eq("thread_id", id).order("at", { ascending: true });
     if (error) { $("msgs").innerHTML = '<div class="status">Could not load: ' + esc(error.message) + "</div>"; return; }
