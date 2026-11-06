@@ -29,12 +29,12 @@
     if (error || !data.session) { const m = String((error && error.message) || ""); $("signin-err").textContent = /invalid login credentials/i.test(m) ? "That email or password is incorrect." : (m ? "Sign-in failed: " + m : "Sign-in failed. Check your connection and try again."); return; }
     enter(data.session.user);
   });
-  $("signout").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
+  $("signout").addEventListener("click", async () => { await sb.auth.signOut({ scope: "local" }); location.reload(); });
   async function enter(user) {
     me = user;
     // Not a support owner: the policies return nothing, so say so plainly.
     const { data: owner } = await sb.from("support_owners").select("email").limit(1);
-    if (!owner || !owner.length) { $("signin").classList.remove("hidden"); $("signin-err").textContent = "This account is not a support owner."; await sb.auth.signOut(); return; }
+    if (!owner || !owner.length) { $("signin").classList.remove("hidden"); $("signin-err").textContent = "This account is not a support owner."; await sb.auth.signOut({ scope: "local" }); return; }
     $("signin").classList.add("hidden");
     $("app").classList.remove("hidden");
     $("me").textContent = user.email || "";
